@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:todo_isar/service/notes_service.dart';
+import 'package:todo_isar/service/service_locator.dart';
+import 'package:todo_isar/service/task_service.dart';
 import 'package:todo_isar/ui/cubit/task_cubit.dart';
 import 'package:todo_isar/ui/todo_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await TaskService.init();
+  await setupLocator();
+
   runApp(const MyApp());
 }
 

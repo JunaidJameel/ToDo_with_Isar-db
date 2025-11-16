@@ -7,7 +7,7 @@ class TaskService {
 
 // INITIALIZE - DB
 
-  static Future<void> init() async {
+  Future<void> init() async {
     final dir = await getApplicationDocumentsDirectory();
 
     isar = await Isar.open([TaskSchema], directory: dir.path);

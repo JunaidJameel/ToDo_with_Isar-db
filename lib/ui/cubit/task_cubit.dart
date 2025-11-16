@@ -1,4 +1,4 @@
-import 'package:todo_isar/service/notes_service.dart';
+import 'package:todo_isar/service/task_service.dart';
 import 'package:todo_isar/ui/cubit/task_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
