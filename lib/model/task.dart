@@ -1,9 +1,9 @@
 import 'package:isar/isar.dart';
 
-part 'note.g.dart';
+part 'task.g.dart';
 
 @Collection()
-class Note {
+class Task {
   Id id = Isar.autoIncrement;
   late String task;
 }

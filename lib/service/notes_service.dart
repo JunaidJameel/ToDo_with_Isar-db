@@ -1,8 +1,8 @@
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:todo_isar/model/note.dart';
+import 'package:todo_isar/model/task.dart';
 
-class NotesService {
+class TaskService {
   static late Isar isar;
 
 // INITIALIZE - DB
@@ -10,43 +10,43 @@ class NotesService {
   static Future<void> init() async {
     final dir = await getApplicationDocumentsDirectory();
 
-    isar = await Isar.open([NoteSchema], directory: dir.path);
+    isar = await Isar.open([TaskSchema], directory: dir.path);
   }
 
-// CREATE A NOTE
+// CREATE A task
 
-  Future<void> createNote(String taskFromUser) async {
-    final newTask = Note()..task = taskFromUser;
+  Future<void> createTask(String taskFromUser) async {
+    final newTask = Task()..task = taskFromUser;
 
     // save to db
 
     await isar.writeTxn(() {
-      return isar.notes.put(newTask);
+      return isar.tasks.put(newTask);
     });
   }
 
-// READ A NOTE
+// READ A task
 
-  Future<List<Note>> fetchNotes() async {
-    return await isar.notes.where().findAll();
+  Future<List<Task>> fetchTasks() async {
+    return await isar.tasks.where().findAll();
   }
 
-// UPDATE A NOTE
+// UPDATE A task
 
-  Future<void> updateNote(int id, String updatedTask) async {
-    final existingTask = await isar.notes.get(id);
+  Future<void> updateTask(int id, String updatedTask) async {
+    final existingTask = await isar.tasks.get(id);
 
     if (existingTask != null) {
       existingTask.task = updatedTask;
-      await isar.writeTxn(() => isar.notes.put(existingTask));
-      await fetchNotes();
+      await isar.writeTxn(() => isar.tasks.put(existingTask));
+      await fetchTasks();
     }
   }
 
-// DELETE A NOTE
+// DELETE A task
 
-  Future<void> deleteNote(int id) async {
-    await isar.writeTxn(() => isar.notes.delete(id));
-    await fetchNotes();
+  Future<void> deleteTask(int id) async {
+    await isar.writeTxn(() => isar.tasks.delete(id));
+    await fetchTasks();
   }
 }

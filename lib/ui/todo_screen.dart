@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:todo_isar/model/note.dart';
-import 'package:todo_isar/provider/notes_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:todo_isar/model/task.dart';
+import 'package:todo_isar/ui/cubit/task_cubit.dart';
+import 'package:todo_isar/ui/cubit/task_state.dart';
 
 class TodoScreen extends StatefulWidget {
   const TodoScreen({super.key});
@@ -14,80 +15,74 @@ class _TodoScreenState extends State<TodoScreen> {
   @override
   void initState() {
     super.initState();
-
-    context.read<NotesProvider>().fetchNotes();
+    context.read<TasksCubit>().fetchTasks();
   }
 
   final textController = TextEditingController();
-  // create a task
 
   void createTask() {
     showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-              actions: [
-                MaterialButton(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  color: Colors.black,
-                  onPressed: () {
-                    context
-                        .read<NotesProvider>()
-                        .createNote(textController.text.trim());
-                    textController.clear();
-                    Navigator.pop(context);
-                  },
-                  child: Text(
-                    'Create Task',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                )
-              ],
-              content: TextField(
-                controller: textController,
-                decoration:
-                    const InputDecoration(hintText: 'Enter your task here'),
-              ),
-            ));
+      context: context,
+      builder: (_) => AlertDialog(
+        actions: [
+          MaterialButton(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            color: Colors.black,
+            onPressed: () {
+              context.read<TasksCubit>().createTask(textController.text.trim());
+              textController.clear();
+              Navigator.pop(context);
+            },
+            child: const Text(
+              'Create Task',
+              style: TextStyle(color: Colors.white),
+            ),
+          )
+        ],
+        content: TextField(
+          controller: textController,
+          decoration: const InputDecoration(hintText: 'Enter your task here'),
+        ),
+      ),
+    );
   }
-  // update a task
 
-  void updateTask(Note note) {
+  void updateTask(Task note) {
     textController.text = note.task;
     showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-              actions: [
-                MaterialButton(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  color: Colors.black,
-                  onPressed: () {
-                    context.read<NotesProvider>().updateNote(
-                          note.id,
-                          textController.text.trim(),
-                        );
-                    textController.clear();
-                    Navigator.pop(context);
-                  },
-                  child: Text(
-                    'Update Task',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                )
-              ],
-              content: TextField(
-                focusNode: FocusNode()..requestFocus(),
-                controller: textController,
-                decoration:
-                    const InputDecoration(hintText: 'Enter your task here'),
-              ),
-            ));
+      context: context,
+      builder: (_) => AlertDialog(
+        actions: [
+          MaterialButton(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            color: Colors.black,
+            onPressed: () {
+              context.read<TasksCubit>().updateTask(
+                    note.id,
+                    textController.text.trim(),
+                  );
+              textController.clear();
+              Navigator.pop(context);
+            },
+            child: const Text(
+              'Update Task',
+              style: TextStyle(color: Colors.white),
+            ),
+          )
+        ],
+        content: TextField(
+          focusNode: FocusNode()..requestFocus(),
+          controller: textController,
+          decoration: const InputDecoration(hintText: 'Enter your task here'),
+        ),
+      ),
+    );
   }
 
-  // delete a task
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -105,42 +100,64 @@ class _TodoScreenState extends State<TodoScreen> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
-      body: Consumer<NotesProvider>(
-        builder: (context, notesProvider, _) {
-          final tasks = notesProvider.currentNotes;
+      body: BlocBuilder<TasksCubit, TaskState>(
+        builder: (context, state) {
+          if (state is TaskLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-          if (tasks.isEmpty) {
-            return const Center(
+          if (state is TaskError) {
+            return Center(
               child: Text(
-                'No Tasks Yet',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                'Error: ${state.message}',
+                style: const TextStyle(color: Colors.red),
               ),
             );
           }
 
-          return ListView.separated(
-            itemBuilder: (_, index) {
-              final task = tasks[index];
-              return ListTile(
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      onPressed: () => updateTask(task),
-                      icon: const Icon(Icons.edit, color: Colors.blue),
-                    ),
-                    IconButton(
-                      onPressed: () =>
-                          context.read<NotesProvider>().deleteNote(task.id),
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                    ),
-                  ],
+          if (state is TaskLoaded) {
+            final tasks = state.tasks;
+
+            if (tasks.isEmpty) {
+              return const Center(
+                child: Text(
+                  'No Tasks Yet',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-                title: Text(task.task),
               );
-            },
-            separatorBuilder: (_, index) => const Divider(),
-            itemCount: tasks.length,
+            }
+
+            return ListView.separated(
+              itemBuilder: (_, index) {
+                final task = tasks[index];
+                return ListTile(
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: () => updateTask(task),
+                        icon: const Icon(Icons.edit, color: Colors.blue),
+                      ),
+                      IconButton(
+                        onPressed: () =>
+                            context.read<TasksCubit>().deleteTask(task.id),
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                      ),
+                    ],
+                  ),
+                  title: Text(task.task),
+                );
+              },
+              separatorBuilder: (_, index) => const Divider(),
+              itemCount: tasks.length,
+            );
+          }
+
+          return const Center(
+            child: Text(
+              'No Tasks Yet',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
           );
         },
       ),
