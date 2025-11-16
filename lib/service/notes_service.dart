@@ -20,7 +20,9 @@ class NotesService {
 
     // save to db
 
-    isar.writeTxn(() => isar.notes.put(newTask));
+    await isar.writeTxn(() {
+      return isar.notes.put(newTask);
+    });
   }
 
 // READ A NOTE

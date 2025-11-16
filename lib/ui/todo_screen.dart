@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:todo_isar/provider/notes_provider.dart';
 
 class TodoScreen extends StatefulWidget {
   const TodoScreen({super.key});
@@ -8,6 +10,13 @@ class TodoScreen extends StatefulWidget {
 }
 
 class _TodoScreenState extends State<TodoScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    context.read<NotesProvider>().fetchNotes();
+  }
+
   final textController = TextEditingController();
   // create a task
 
@@ -21,7 +30,13 @@ class _TodoScreenState extends State<TodoScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   color: Colors.black,
-                  onPressed: () {},
+                  onPressed: () {
+                    context
+                        .read<NotesProvider>()
+                        .createNote(textController.text.trim());
+                    textController.clear();
+                    Navigator.pop(context);
+                  },
                   child: Text(
                     'Create Task',
                     style: TextStyle(color: Colors.white),
@@ -43,17 +58,39 @@ class _TodoScreenState extends State<TodoScreen> {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: createTask,
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
       appBar: AppBar(
         backgroundColor: Colors.purple[200],
-        title: Text(
+        title: const Text(
           'ToDo with Isar DB',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
-      body: const Center(
-        child: Text('Todo Screen'),
+      body: Consumer<NotesProvider>(
+        builder: (context, notesProvider, _) {
+          final tasks = notesProvider.currentNotes;
+
+          if (tasks.isEmpty) {
+            return const Center(
+              child: Text(
+                'No Tasks Yet',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            );
+          }
+
+          return ListView.separated(
+            itemBuilder: (_, index) {
+              final task = tasks[index];
+              return ListTile(
+                title: Text(task.task),
+              );
+            },
+            separatorBuilder: (_, index) => const Divider(),
+            itemCount: tasks.length,
+          );
+        },
       ),
     );
   }
