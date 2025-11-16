@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:todo_isar/model/note.dart';
 import 'package:todo_isar/provider/notes_provider.dart';
 
 class TodoScreen extends StatefulWidget {
@@ -52,12 +53,48 @@ class _TodoScreenState extends State<TodoScreen> {
   }
   // update a task
 
+  void updateTask(Note note) {
+    textController.text = note.task;
+    showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+              actions: [
+                MaterialButton(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  color: Colors.black,
+                  onPressed: () {
+                    context
+                        .read<NotesProvider>()
+                        .createNote(textController.text.trim());
+                    textController.clear();
+                    Navigator.pop(context);
+                  },
+                  child: Text(
+                    'Update Task',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                )
+              ],
+              content: TextField(
+                focusNode: FocusNode()..requestFocus(),
+                controller: textController,
+                decoration:
+                    const InputDecoration(hintText: 'Enter your task here'),
+              ),
+            ));
+  }
+
   // delete a task
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: createTask,
+        onPressed: () {
+          textController.clear();
+          createTask();
+        },
         child: const Icon(Icons.add),
       ),
       appBar: AppBar(
@@ -84,6 +121,22 @@ class _TodoScreenState extends State<TodoScreen> {
             itemBuilder: (_, index) {
               final task = tasks[index];
               return ListTile(
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: () => updateTask(task),
+                      icon: const Icon(Icons.edit, color: Colors.blue),
+                    ),
+                    // IconButton(
+                    //   onPressed: () => context
+                    //       .read<NotesProvider>()
+                    //       .noteService
+                    //       .deleteNote(task.id),
+                    //   icon: const Icon(Icons.delete, color: Colors.red),
+                    // ),
+                  ],
+                ),
                 title: Text(task.task),
               );
             },
