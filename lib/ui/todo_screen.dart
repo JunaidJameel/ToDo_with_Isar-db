@@ -65,9 +65,10 @@ class _TodoScreenState extends State<TodoScreen> {
                   ),
                   color: Colors.black,
                   onPressed: () {
-                    context
-                        .read<NotesProvider>()
-                        .createNote(textController.text.trim());
+                    context.read<NotesProvider>().updateNote(
+                          note.id,
+                          textController.text.trim(),
+                        );
                     textController.clear();
                     Navigator.pop(context);
                   },
@@ -128,13 +129,11 @@ class _TodoScreenState extends State<TodoScreen> {
                       onPressed: () => updateTask(task),
                       icon: const Icon(Icons.edit, color: Colors.blue),
                     ),
-                    // IconButton(
-                    //   onPressed: () => context
-                    //       .read<NotesProvider>()
-                    //       .noteService
-                    //       .deleteNote(task.id),
-                    //   icon: const Icon(Icons.delete, color: Colors.red),
-                    // ),
+                    IconButton(
+                      onPressed: () =>
+                          context.read<NotesProvider>().deleteNote(task.id),
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                    ),
                   ],
                 ),
                 title: Text(task.task),

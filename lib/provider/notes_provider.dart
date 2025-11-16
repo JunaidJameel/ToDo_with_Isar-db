@@ -8,11 +8,7 @@ class NotesProvider extends ChangeNotifier {
 
   Future<void> createNote(String task) async {
     await noteService.createNote(task);
-    final tasks = await noteService.fetchNotes();
-
-    currentNotes.clear();
-    currentNotes.addAll(tasks);
-    notifyListeners();
+    await fetchNotes();
   }
 
   Future<void> fetchNotes() async {
@@ -20,5 +16,15 @@ class NotesProvider extends ChangeNotifier {
     currentNotes.clear();
     currentNotes.addAll(tasks);
     notifyListeners();
+  }
+
+  Future<void> updateNote(int id, String updatedTask) async {
+    await noteService.updateNote(id, updatedTask);
+    await fetchNotes();
+  }
+
+  Future<void> deleteNote(int id) async {
+    await noteService.deleteNote(id);
+    await fetchNotes();
   }
 }
