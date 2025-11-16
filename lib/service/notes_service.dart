@@ -25,8 +25,8 @@ class NotesService {
 
 // READ A NOTE
 
-  Future<void> fetchNotes() async {
-    await isar.notes.where().findAll();
+  Future<List<Note>> fetchNotes() async {
+    return await isar.notes.where().findAll();
   }
 
 // UPDATE A NOTE
